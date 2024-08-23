@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Test Developed by Piku Pokha</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+        }
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 24px;
+        }
+        .text-display {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .text-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4caf50;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+        .correct {
+            background-color: lightgreen;
+        }
+        .incorrect {
+            background-color: lightcoral;
+        }
+        #result {
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 20px;
+            background-color: #4caf50;
+            width: 0;
+        }
+        .textarea-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .textarea-container textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Typing Test</h1>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="text-display" id="text-display">
+            <!-- Sample Text -->
+            Human resources play a pivotal role in the success and sustainability of the tourism industry serving as the backbone that supports the intricate web of interactions between tourists service providers and destinations. ...
+        </div>
+        <textarea id="text-input" class="text-input" placeholder="Start typing..." oninput="updateDisplay()"></textarea>
+        <div class="textarea-container">
+            <textarea id="custom-text" placeholder="Paste your text here to change the sample text..."></textarea>
+            <button onclick="updateSampleText()">Update Sample Text</button>
+        </div>
+        <div class="buttons">
+            <select id="time-select">
+                <option value="300">5 Minutes</option>
+                <option value="600">10 Minutes</option>
+            </select>
+            <button onclick="startTest()">Start Test</button>
+            <button onclick="submitTest()">Submit Test</button>
+            <button onclick="restartTest()">Restart Test</button>
+        </div>
+        <p id="result"></p>
+    </div>
+    <script>
+        let timer;
+        let timeLeft;
+        let startTime;
+        let interval;
+        let errorCount = 0;
+        let sampleText = `Human resources play a pivotal role in the success and sustainability of the tourism industry serving as the backbone that supports the intricate web of interactions between tourists service providers and destinations. Human resource management is essential for ensuring that the diverse needs and expectations of both tourists and employees are met in a harmonious and sustainable manner. One of the primary functions of human resources in tourism is talent acquisition and retention. In an industry characterized by seasonal fluctuations and intense competition for skilled workers, recruiting and retaining top talent is paramount. Human resource professionals must develop robust recruitment strategies to attract individuals with the necessary skills, qualifications, and passion for hospitality. They must implement retention initiatives such as competitive compensation packages, professional development opportunities, and a positive work culture to ensure that employees feel valued and motivated to stay with their organization. Human resources play a crucial role in training and development within the tourism sector. Given the dynamic nature of the industry and the ever-evolving needs of travellers, continuous learning and skill development are essential for maintaining a competitive edge. Human resource professionals design and implement comprehensive training programs that equip employees with the knowledge, skills, and competencies required to deliver exceptional service and enhance the overall tourist experience. This may involve providing specialized training in areas such as customer service, cultural sensitivity, language proficiency, and sustainability practices. By investing in the professional development of their workforce, organizations can improve employee satisfaction, increase productivity, and ultimately enhance the quality of services offered to tourists. They are instrumental in fostering a positive work environment and organizational culture within tourism enterprises. In an industry that relies heavily on the interactions between employees and tourists, creating a supportive and inclusive workplace culture is essential for promoting employee engagement, morale, and job satisfaction. Human resource professionals champion diversity and inclusion initiatives ensuring that employees from different backgrounds feel respected, valued, and empowered to contribute their unique perspectives and talents. They must cultivate a culture of teamwork, collaboration, and mutual respect, fostering strong interpersonal relationships among employees and promoting a sense of belonging within the organization. A positive work environment not only enhances employee well-being but also translates into improved customer satisfaction and loyalty as tourists are more likely to have positive experiences and return for future visits.`;
+        let sampleWords = sampleText.split(' ');
+
+        function startTest() {
+            const timeSelect = document.getElementById("time-select");
+            timeLeft = parseInt(timeSelect.value);
+            startTime = new Date().getTime();
+            errorCount = 0;
+            clearInterval(interval);
+            interval = setInterval(updateTimer, 1000);
+            document.getElementById("text-input").value = "";
+            document.getElementById("text-input").disabled = false;
+            document.getElementById("text-input").focus();
+            document.getElementById("result").textContent = "";
+            document.getElementById("text-display").innerHTML = sampleText;
+            document.getElementById("progress").style.width = "0";
+        }
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const elapsedTime = Math.floor((now - startTime) / 1000);
+            const remainingTime = timeLeft - elapsedTime;
+            const progress = Math.min((elapsedTime / timeLeft) * 100, 100);
+            document.getElementById("progress").style.width = progress + "%";
+
+            if (remainingTime <= 0) {
+                clearInterval(interval);
+                document.getElementById("text-input").disabled = true;
+                calculateWPM();
+            } else {
+                document.getElementById("result").textContent = `Time Left: ${Math.floor(remainingTime / 60)}m ${remainingTime % 60}s`;
+            }
+        }
+
+        function submitTest() {
+            clearInterval(interval);
+            document.getElementById("text-input").disabled = true;
+            calculateWPM();
+        }
+
+        function restartTest() {
+            document.getElementById("text-input").disabled = false;
+            document.getElementById("text-input").value = "";
+            document.getElementById("result").textContent = "";
+            document.getElementById("progress").style.width = "0";
+            errorCount = 0;
+        }
+
+        function calculateWPM() {
+            const textInput = document.getElementById("text-input").value;
+            const wordsTyped = textInput.trim().split(/\s+/).length;
+            const elapsedTime = (new Date().getTime() - startTime) / 1000 / 60;
+            const wpm = Math.floor(wordsTyped / elapsedTime);
+            const accuracy = ((wordsTyped - errorCount) / wordsTyped * 100).toFixed(2);
+            document.getElementById("result").textContent = `Your WPM: ${wpm} | Errors: ${errorCount} | Accuracy: ${accuracy}%`;
+
+            if (wpm > 50) {
+                alert('Great job! Keep it up!');
+            } else if (wpm > 30) {
+                alert('Good job! You can do even better!');
+            } else {
+                alert('Keep practicing! You can improve!');
+            }
+        }
+
+        function updateDisplay() {
+            const textInput = document.getElementById("text-input").value;
+            const display = document.getElementById("text-display");
+            const sampleChars = sampleText.split('');
+            const inputChars = textInput.split('');
+
+            display.innerHTML = '';
+            errorCount = 0;
+
+            sampleChars.forEach((char, index) => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                if (index < inputChars.length) {
+                    if (char === inputChars[index]) {
+                        span.classList.add('correct');
+                    } else {
+                        span.classList.add('incorrect');
+                        errorCount++;
+                    }
+                }
+                display.appendChild(span);
+            });
+        }
+
+        function updateSampleText() {
+            const customText = document.getElementById("custom-text").value.trim();
+            if (customText) {
+                sampleText = customText;
+                sampleWords = sampleText.split(' ');
+                document.getElementById("text-display").innerHTML = sampleText;
+            }
+        }
+    </script>
+</body>
+</html>
