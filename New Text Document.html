@@ -110,6 +110,31 @@
 </head>
 <body>
     <div class="container">
+        <script>
+  // ... (rest of your JavaScript code)
+
+  function updateDisplay() {
+    const textInput = document.getElementById("text-input").value;
+    const display = document.getElementById("text-display");
+    const sampleChars = sampleText.split('');
+    const inputChars = textInput.split('');
+
+    // Create a document fragment to improve performance
+    const fragment = document.createDocumentFragment();
+
+    sampleChars.forEach((char, index) => {
+      const span = document.createElement('span');
+      span.textContent = char;
+      // ... (rest of your logic for highlighting correct/incorrect words)
+      fragment.appendChild(span);
+    });
+
+    // Append the fragment to the DOM only once
+    display.appendChild(fragment);
+  }
+
+  // ... (rest of your JavaScript code)
+</script>
         <h1>Typing Test</h1>
         <div class="progress-bar">
             <div class="progress" id="progress"></div>
